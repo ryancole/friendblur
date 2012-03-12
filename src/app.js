@@ -1,8 +1,6 @@
 
 var swig = require('swig'),
-    express = require('express'),
-    oauth = require('connect-auth'),
-    sessionstore = require('connect-redis')(express);
+    express = require('express');
 
 
 // initialize application server
@@ -27,23 +25,6 @@ app.configure(function() {
     app.use(express.bodyParser());
     app.use(express.cookieParser());
     app.use(express.methodOverride());
-    
-    app.use(express.session({
-        secret : 'friendblur',
-        store : new sessionstore
-    }));
-
-    // configure facebook oauth
-    var oauth_credentials = {
-        appId: '275172692558681',
-        appSecret: 'cff3e62b1231fcf24fe0e2261bd07e33',
-        scope: '',
-        callback: 'http://friendblur.com/auth/signin'
-    };
-
-    // initialize facebook oauth handler
-    var oauth_handlers = [ oauth.Facebook(oauth_credentials) ];
-    app.use(oauth(oauth_handlers));
     
     app.use(express.errorHandler({
         dumpExceptions : true,
