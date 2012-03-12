@@ -1,4 +1,6 @@
 
+var middleware = require('../../middleware');
+
 
 var AuthenticationRouter = module.exports = function (express) {
     
@@ -6,7 +8,7 @@ var AuthenticationRouter = module.exports = function (express) {
     this.express = express;
     
     // routes: get
-    this.express.get('/', this.foo);
+    this.express.get('/', middleware.restricted, this.foo);
     this.express.get('/auth/signin', this.signin);
     
 };
@@ -14,15 +16,16 @@ var AuthenticationRouter = module.exports = function (express) {
 
 AuthenticationRouter.prototype.signin = function (req, res) {
 
-    req.authenticate([req.param('method')], function (err, authenticated) {
+    // begin oauth authentication
+    req.authenticate(['facebook'], function (err, authenticated) {
 
         if (authenticated) {
 
-            return res.end('lol');
+            return res.redirect('/');
 
         } else {
 
-            return res.end('haha');
+            return res.end('authentication failed');
 
         }
 
@@ -33,14 +36,6 @@ AuthenticationRouter.prototype.signin = function (req, res) {
 
 AuthenticationRouter.prototype.foo = function (req, res) {
 
-    if (req.isAuthenticated()) {
-
-        return res.send('u r signed in, woot');
-
-    } else {
-
-        return res.redirect('/auth/signin?method=facebook&redirectUrl=' + escape(req.url));
-
-    }
+    return res.send(req.getAuthDetails());
 
 };

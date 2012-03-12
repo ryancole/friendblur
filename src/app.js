@@ -29,7 +29,7 @@ app.configure(function() {
     app.use(express.methodOverride());
     
     app.use(express.session({
-        secret : 'litigance',
+        secret : 'friendblur',
         store : new sessionstore
     }));
 
@@ -37,12 +37,12 @@ app.configure(function() {
     var oauth_credentials = {
         appId: '275172692558681',
         appSecret: 'cff3e62b1231fcf24fe0e2261bd07e33',
-        scope: 'friendblur',
-        callback: 'http://friendblur.com'
+        scope: '',
+        callback: 'http://friendblur.com/auth/signin'
     };
 
     // initialize facebook oauth handler
-    var oauth_handlers = [ oauth.Facebook() ];
+    var oauth_handlers = [ oauth.Facebook(oauth_credentials) ];
     app.use(oauth(oauth_handlers));
     
     app.use(express.errorHandler({
