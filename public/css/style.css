@@ -1,0 +1,21 @@
+
+#random-friend1, #random-friend2, #random-friend3 {
+    display: none;
+}
+
+#blur-friend1, #blur-friend2, #blur-friend3 {
+    border-radius: 3px;
+}
+
+#search-container1, #search-container2, #search-container3 {
+    text-align: center;
+}
+
+#round-timer {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+footer {
+    text-align: center;
+}

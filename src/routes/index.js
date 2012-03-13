@@ -1,4 +1,6 @@
 
+var request = require('request');
+
 
 // define route handler
 
@@ -10,6 +12,7 @@ function GameRouter (express) {
     // routes: get
     this.express.get('/', this.about);
     this.express.get('/play/', this.play);
+    this.express.get('/friend', this.friend);
     
 };
 
@@ -27,6 +30,16 @@ GameRouter.prototype.play = function (req, res) {
     
 };
 
+
+GameRouter.prototype.friend = function (req, res) {
+    
+    var access_token = req.query.access_token,
+        friend_id = req.query.friend_id,
+        photo_url = 'https://graph.facebook.com/' + friend_id + '/picture?type=large&access_token=' + access_token;
+    
+    return request.get(photo_url).pipe(res);
+    
+};
 
 
 
