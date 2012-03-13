@@ -8,14 +8,22 @@ function GameRouter (express) {
     this.express = express;
     
     // routes: get
-    this.express.get('/play', this.play);
+    this.express.get('/', this.about);
+    this.express.get('/play/', this.play);
+    
+};
+
+
+GameRouter.prototype.about = function (req, res) {
+    
+    return res.render('game/about')
     
 };
 
 
 GameRouter.prototype.play = function (req, res) {
     
-    res.render('game/play');
+    return res.render('game/play');
     
 };
 

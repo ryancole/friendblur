@@ -15,16 +15,19 @@ var Friendblur = {
 };
 
 
+// authenticated user model
+
 Friendblur.Models.User = Backbone.Model.extend({
     
     // constructor
     initialize: function (data) {
         
-        $.getJSON('https://graph.facebook.com/me/friends?' + Friendblur.Facebook.access_token, function (result) {
-            
-            Friendblur.friends = new Friendblur.Collections.Friends(result.data);
-            
-        });
+        // initialize friends collection and view
+        Friendblur.friends = new Friendblur.Collections.Friends();
+        Friendblur.random_friend = new Friendblur.Views.RandomFriend();
+        
+        // query friends from facebook api
+        Friendblur.friends.from_facebook('https://graph.facebook.com/me/friends?' + Friendblur.Facebook.access_token);
         
     }
     
@@ -33,13 +36,72 @@ Friendblur.Models.User = Backbone.Model.extend({
 
 Friendblur.Models.Friend = Backbone.Model.extend({
     
+    initialize: function (friend) {
+        
+        this.set('profile_photo_url', 'https://graph.facebook.com/' + friend.id + '/picture?type=large&' + Friendblur.Facebook.access_token);
+        
+    }
+    
 });
 
+
+// facebook friends collection
 
 Friendblur.Collections.Friends = Backbone.Collection.extend({
     
     // collection model
-    model: Friendblur.Models.Friend
+    model: Friendblur.Models.Friend,
+    
+    // utility method for loading friends from facebook api
+    from_facebook: function (url) {
+        
+        $.getJSON(url, function (result) {
+            
+            // add these friends to the collection
+            Friendblur.friends.add(result.data);
+            
+            // if there are more pages, query for them, too
+            if ('next' in result.paging)
+                Friendblur.friends.from_facebook(result.paging.next);
+                
+            else
+                Friendblur.random_friend.randomize();
+            
+        });
+        
+    }
+    
+});
+
+
+// random friend view
+
+Friendblur.Views.RandomFriend = Backbone.View.extend({
+    
+    // element to render friend in
+    el: '#random-friend',
+    
+    // method to select random friend and set picture
+    render: function () {
+        
+        $(this.el).css('background-image', 'url(' + this.random_friend.get('profile_photo_url') + ')');
+        $('#blur-frame').blurjs({ radius: 10, source: this.el });
+        
+    },
+    
+    
+    randomize: function () {
+        
+        // get random number
+        var random_number = Math.floor(Math.random() * Friendblur.friends.length);
+        
+        // set random friend
+        this.random_friend = Friendblur.friends.at(random_number);
+        
+        // render this friend
+        this.render();
+        
+    }
     
 });
 

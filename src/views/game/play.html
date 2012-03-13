@@ -4,6 +4,7 @@
 {% block scripts %}
     <script type="text/javascript" src="/public/js/lib/json2.js"></script>
     <script type="text/javascript" src="/public/js/lib/jquery.min.js"></script>
+    <script type="text/javascript" src="/public/js/lib/blur.js"></script>
     <script type="text/javascript" src="/public/js/lib/underscore.js"></script>
     <script type="text/javascript" src="/public/js/lib/backbone.js"></script>
     <script type="text/javascript" src="/public/js/friendblur.js"></script>
@@ -11,5 +12,11 @@
 
 
 {% block content %}
-    <p id="userName"></p>
+    <div class="page-header">
+        <h1>friendblur</h1>
+    </div>
+    <div class="row">
+        <div id="blur-frame" style="width: 100px; height: 100px;"></div>
+        <div id="random-friend" style="width: 100px; height: 100px;"></div>
+    </div>
 {% endblock %}
