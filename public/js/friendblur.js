@@ -67,14 +67,12 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
             // compare names
             if (this_friend.get('name') === this.value) {
                 
-                // success
                 $('#search-container1').addClass('success');
                 $('#search-container1 .icon-search').addClass('icon-ok').removeClass('icon-search');
                 
             } else {
                 
                 $('#search-container1').addClass('error');
-                $('#search-container1 .icon-search').addClass('icon-remove').removeClass('icon-search');
                 
             }
             
@@ -103,7 +101,6 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
             } else {
                 
                 $('#search-container2').addClass('error');
-                $('#search-container2 .icon-search').addClass('icon-remove').removeClass('icon-search');
                 
             }
             
@@ -132,7 +129,6 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
             } else {
                 
                 $('#search-container3').addClass('error');
-                $('#search-container3 .icon-search').addClass('icon-remove').removeClass('icon-search');
                 
             }
             
@@ -180,6 +176,9 @@ Friendblur.Views.RandomFriends = Backbone.View.extend({
     // source elements
     els: ['#random-friend1', '#random-friend2', '#random-friend3'],
     
+    // the blur radius
+    radius: 10,
+    
     // method to select random friend and set picture
     render: function () {
         
@@ -189,12 +188,23 @@ Friendblur.Views.RandomFriends = Backbone.View.extend({
         $(this.els[2]).css('background-image', 'url(' + this.random_friends[2].get('profile_photo_url') + ')');
         
         // blur the source images
-        $('img[id^=blur-friend]').blurjs({ radius: 10, source: this.els });
+        $('img[id^=blur-friend]').blurjs({ radius: this.radius, source: this.els });
         
         // instantiate timer id and start a new game round
         Friendblur.timer_id = 0;
         Friendblur.round = new Friendblur.Views.RoundView();
         Friendblur.round.timer_tick();
+        
+    },
+    
+    // render same friends with lower blur
+    render_again: function () {
+        
+        // reduce the radius
+        this.radius = this.radius - 2;
+        
+        // blur the source images
+        $('img[id^=blur-friend]').blurjs({ radius: this.radius, source: this.els });
         
     },
     
@@ -209,6 +219,9 @@ Friendblur.Views.RandomFriends = Backbone.View.extend({
         this.random_friends = [Friendblur.friends.at(random_numbers[0]),
                                Friendblur.friends.at(random_numbers[1]),
                                Friendblur.friends.at(random_numbers[2])];
+        
+        // reset the blur radius
+        this.radius = 10;
         
         // render the friends
         this.render();
@@ -239,7 +252,9 @@ Friendblur.Views.RoundView = Backbone.View.extend({
         this.countdown = 3;
         
         // enable the input boxes
-        $('input[id^=guess-input]').attr('disabled', false);
+        $('input[id^=guess-input]').attr('disabled', false).val('');
+        $('div[id^=search-container]').removeClass('success').removeClass('error');
+        $('i[class^=icon-]').addClass('icon-search').removeClass('icon-error').removeClass('icon-ok');
         
     },
     
@@ -255,13 +270,22 @@ Friendblur.Views.RoundView = Backbone.View.extend({
             
             if (this.countdown > 0) {
             
+                // reduce the blur
+                Friendblur.random_friends.render_again();
+            
+                // show count-down
                 this.countdown = this.countdown - 1;
                 this.$el.html('time left: ' + ((this.countdown + 1) * 4) + ' seconds');
             
             } else {
                 
-                this.$el.html('round over!');
+                this.$el.html('round over! starting new round.');
+                
+                // clear the timer interval
                 clearInterval(Friendblur.timer_id);
+                
+                // start all over again
+                Friendblur.random_friends.randomize();
                 
             }
             
