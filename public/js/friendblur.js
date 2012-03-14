@@ -70,9 +70,15 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
                 $('#search-container1').addClass('success');
                 $('#search-container1 .icon-search').addClass('icon-ok').removeClass('icon-search');
                 
+                // track this even with mixpanel
+                mpq.track("successful guess");
+                
             } else {
                 
                 $('#search-container1').addClass('error');
+                
+                // track this even with mixpanel
+                mpq.track("failed guess");
                 
             }
             
@@ -98,9 +104,15 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
                 $('#search-container2').addClass('success');
                 $('#search-container2 .icon-search').addClass('icon-ok').removeClass('icon-search');
                 
+                // track this even with mixpanel
+                mpq.track("successful guess");
+                
             } else {
                 
                 $('#search-container2').addClass('error');
+                
+                // track this even with mixpanel
+                mpq.track("failed guess");
                 
             }
             
@@ -126,9 +138,15 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
                 $('#search-container3').addClass('success');
                 $('#search-container3 .icon-search').addClass('icon-ok').removeClass('icon-search');
                 
+                // track this even with mixpanel
+                mpq.track("successful guess");
+                
             } else {
                 
                 $('#search-container3').addClass('error');
+                
+                // track this even with mixpanel
+                mpq.track("failed guess");
                 
             }
             
@@ -225,6 +243,9 @@ Friendblur.Views.RandomFriends = Backbone.View.extend({
         
         // render the friends
         this.render();
+        
+        // track this even with mixpanel
+        mpq.track("new round");
         
     }
     
