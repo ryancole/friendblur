@@ -1,9 +1,9 @@
 
-#random-friend1, #random-friend2, #random-friend3 {
+#image-source1, #image-source2, #image-source3 {
     display: none;
 }
 
-#blur-friend1, #blur-friend2, #blur-friend3 {
+#image-destination1, #image-destination2, #image-destination3 {
     border-radius: 3px;
 }
 

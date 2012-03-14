@@ -15,16 +15,15 @@ var Friendblur = {
 };
 
 
-// authenticated user model
+// MODELS
 
 Friendblur.Models.User = Backbone.Model.extend({
     
     // constructor
     initialize: function (data) {
         
-        // initialize friends collection and view
+        // we only want to query friends once, so it's a global variable
         Friendblur.friends = new Friendblur.Collections.Friends();
-        Friendblur.random_friends = new Friendblur.Views.RandomFriends();
         
         // query friends from facebook api
         Friendblur.friends.from_facebook('https://graph.facebook.com/me/friends?' + Friendblur.Facebook.access_token);
@@ -38,124 +37,19 @@ Friendblur.Models.Friend = Backbone.Model.extend({
     
     initialize: function (friend) {
         
-        this.set('profile_photo_url', 'http://friendblur.com/friend?friend_id=' + friend.id + '&' + Friendblur.Facebook.access_token);
+        this.set('profile_photo_url', window.location.origin + '/friend?friend_id=' + friend.id + '&' + Friendblur.Facebook.access_token);
         
     }
     
 });
 
 
-// facebook friends collection
+// COLLECTIONS
 
 Friendblur.Collections.Friends = Backbone.Collection.extend({
     
     // collection model
     model: Friendblur.Models.Friend,
-    
-    set_typeahead: function () {
-        
-        // bootstrap only allows 1 match :(
-        $('#guess-input1').typeahead({
-            
-            source: this.pluck('name')
-            
-        }).change(function (event) {
-            
-            // get this friend
-            var this_friend = Friendblur.random_friends.random_friends[0];
-            
-            // compare names
-            if (this_friend.get('name') === this.value) {
-                
-                $('#search-container1').addClass('success');
-                $('#search-container1 .icon-search').addClass('icon-ok').removeClass('icon-search');
-                
-                // track this even with mixpanel
-                mpq.track("successful guess");
-                
-            } else {
-                
-                $('#search-container1').addClass('error');
-                
-                // track this even with mixpanel
-                mpq.track("failed guess");
-                
-            }
-            
-            // disable this, only 1 guess allowed
-            $(this).attr('disabled', true);
-            
-        });
-        
-        // bootstrap only allows 1 match :(
-        $('#guess-input2').typeahead({
-            
-            source: this.pluck('name')
-            
-        }).change(function (event) {
-            
-            // get this friend
-            var this_friend = Friendblur.random_friends.random_friends[1];
-            
-            // compare names
-            if (this_friend.get('name') === this.value) {
-                
-                // success
-                $('#search-container2').addClass('success');
-                $('#search-container2 .icon-search').addClass('icon-ok').removeClass('icon-search');
-                
-                // track this even with mixpanel
-                mpq.track("successful guess");
-                
-            } else {
-                
-                $('#search-container2').addClass('error');
-                
-                // track this even with mixpanel
-                mpq.track("failed guess");
-                
-            }
-            
-            // disable this, only 1 guess allowed
-            $(this).attr('disabled', true);
-            
-        });
-        
-        // bootstrap only allows 1 match :(
-        $('#guess-input3').typeahead({
-            
-            source: this.pluck('name')
-            
-        }).change(function (event) {
-            
-            // get this friend
-            var this_friend = Friendblur.random_friends.random_friends[2];
-            
-            // compare names
-            if (this_friend.get('name') === this.value) {
-                
-                // success
-                $('#search-container3').addClass('success');
-                $('#search-container3 .icon-search').addClass('icon-ok').removeClass('icon-search');
-                
-                // track this even with mixpanel
-                mpq.track("successful guess");
-                
-            } else {
-                
-                $('#search-container3').addClass('error');
-                
-                // track this even with mixpanel
-                mpq.track("failed guess");
-                
-            }
-            
-            // disable this, only 1 guess allowed
-            $(this).attr('disabled', true);
-            
-        });
-        
-    },
     
     // utility method for loading friends from facebook api
     from_facebook: function (url) {
@@ -172,11 +66,14 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
             
             } else {
                 
-                // enable typeahead
-                Friendblur.friends.set_typeahead();
+                // set the plucked friend name list
+                Friendblur.friend_names = Friendblur.friends.pluck('name');
                 
-                // show a random friend
-                Friendblur.random_friends.randomize();
+                // instantiate the first game round
+                Friendblur.game_round = new Friendblur.Views.GameRoundView();
+                
+                // and start it
+                Friendblur.game_round.start();
                 
             }
             
@@ -187,128 +84,340 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
 });
 
 
-// random friend view
+// VIEWS
 
-Friendblur.Views.RandomFriends = Backbone.View.extend({
+
+Friendblur.Views.InputViews = Backbone.View.extend({
     
-    // source elements
-    els: ['#random-friend1', '#random-friend2', '#random-friend3'],
-    
-    // the blur radius
-    radius: 10,
-    
-    // method to select random friend and set picture
-    render: function () {
+    initialize: function () {
         
-        // set source images
-        $(this.els[0]).css('background-image', 'url(' + this.random_friends[0].get('profile_photo_url') + ')');
-        $(this.els[1]).css('background-image', 'url(' + this.random_friends[1].get('profile_photo_url') + ')');
-        $(this.els[2]).css('background-image', 'url(' + this.random_friends[2].get('profile_photo_url') + ')');
-        
-        // blur the source images
-        $('img[id^=blur-friend]').blurjs({ radius: this.radius, source: this.els });
-        
-        // instantiate timer id and start a new game round
-        Friendblur.timer_id = 0;
-        Friendblur.round = new Friendblur.Views.RoundView();
-        Friendblur.round.timer_tick();
+        this.els = [new Friendblur.Views.InputView(1),
+                    new Friendblur.Views.InputView(2),
+                    new Friendblur.Views.InputView(3)];
         
     },
     
-    // render same friends with lower blur
-    render_again: function () {
+    disable: function () {
         
-        // reduce the radius
-        this.radius = this.radius - 2;
-        
-        // blur the source images
-        $('img[id^=blur-friend]').blurjs({ radius: this.radius, source: this.els });
+        for (var x = 0; x < this.els.length; x++)
+            this.els[x].disable();
         
     },
     
+    enable: function () {
+        
+        for (var x = 0; x < this.els.length; x++)
+            this.els[x].enable();
+        
+    },
     
-    randomize: function () {
+    reset: function () {
         
-        var random_numbers = [Math.floor(Math.random() * Friendblur.friends.length),
-                              Math.floor(Math.random() * Friendblur.friends.length),
-                              Math.floor(Math.random() * Friendblur.friends.length)];
-        
-        // randomize friends
-        this.random_friends = [Friendblur.friends.at(random_numbers[0]),
-                               Friendblur.friends.at(random_numbers[1]),
-                               Friendblur.friends.at(random_numbers[2])];
-        
-        // reset the blur radius
-        this.radius = 10;
-        
-        // render the friends
-        this.render();
-        
-        // track this even with mixpanel
-        mpq.track("new round");
+        for (var x = 0; x < this.els.length; x++) {
+            
+            this.els[x].reset();
+            this.els[x].enable();
+            
+        }
         
     }
     
 });
 
 
-// the game view
-
-Friendblur.Views.RoundView = Backbone.View.extend({
+Friendblur.Views.InputView = Backbone.View.extend({
     
-    // timer element
-    el: '#round-timer',
-    
-    // iteration count
-    countdown: 3,
-    
-    // constructor
-    initialize: function () {
+    initialize: function (index) {
         
-        // clear previous timer, if still going
-        if (Friendblur.timer_id != 0)
-            clearInterval(Friendblur.timer_id);
+        this.el = '#guess-input' + index;
+        this.el_icon = this.el + ' .result-icon';
+        this.el_container = '#search-container' + index;
         
-        // reset timer iterations
-        this.countdown = 3;
-        
-        // enable the input boxes
-        $('input[id^=guess-input]').attr('disabled', false).val('');
-        $('div[id^=search-container]').removeClass('success').removeClass('error');
-        $('i[class^=icon-]').addClass('icon-search').removeClass('icon-error').removeClass('icon-ok');
+        // enable bootstrap type ahead
+        $(this.el).typeahead({
+            
+            source: Friendblur.friend_names
+            
+        }).change(function (event) {
+            
+            // get the selected friend's name
+            var this_friend = 'foo';
+            
+            // remove style classes
+            this.remove_classes();
+            
+            // compare friend names
+            if (this_friend === this.value) {
+                
+                this.success();
+                
+            } else {
+                
+                this.failure();
+                
+            }
+            
+            // disable this input
+            this.disable();
+            
+        }.bind(this));
         
     },
     
-    
-    // manage the game timer
-    timer_tick: function () {
+    reset: function () {
         
-        if (Friendblur.timer_id == 0) {
+        // remove classes
+        this.remove_classes();
+        
+        // reset text inside
+        $(this.el).val('');
+        
+        // add the icon search
+        $(this.el_icon).addClass('icon-search');
+        
+    },
+    
+    enable: function () {
+        
+        $(this.el).attr('disabled', false);
+        
+    },
+    
+    disable: function () {
+        
+        $(this.el).attr('disabled', true);
+        
+    },
+    
+    remove_classes: function () {
+        
+        if ($(this.el_container).hasClass('error'))
+            $(this.el_container).removeClass('error');
+        
+        if ($(this.el_icon).hasClass('icon-remove'))
+            $(this.el_icon).removeClass('icon-remove');
+        
+        if ($(this.el_container).hasClass('success'))
+            $(this.el_container).removeClass('success');
+        
+        if ($(this.el_icon).hasClass('icon-ok'))
+            $(this.el_icon).removeClass('icon-ok');
             
-            Friendblur.timer_id = setInterval(Friendblur.round.timer_tick.bind(this), 4000);
+        if ($(this.el_icon).hasClass('icon-search'))
+            $(this.el_icon).removeClass('icon-search');
+        
+    },
+    
+    success: function () {
+        
+        // set success input class
+        $(this.el_container).addClass('success');
+        
+        // set success icon class
+        $(this.el_icon).addClass('icon-ok');
+        
+    },
+    
+    failure: function () {
+        
+        // set fail input class
+        $(this.el_container).addClass('error');
+        
+        // set fail icon class
+        $(this.el_icon).addClass('icon-remove');
+        
+    }
+    
+});
+
+
+
+Friendblur.Views.FriendView = Backbone.View.extend({
+    
+    initialize: function (index) {
+        
+        this.el = '#image-source' + index;
+        this.blur_el = '#image-destination' + index;
+        
+    },
+    
+    set_friend: function (friend) {
+        
+        this.friend = friend;
+        
+    },
+    
+    render: function (blur) {
+        
+        // set source image
+        $(this.el).css('background-image', 'url(' + this.friend.get('profile_photo_url') + ')');
+        
+        // render blur image
+        $(this.blur_el).blurjs({ radius: blur, source: this.el });
+        
+    }
+    
+});
+
+
+Friendblur.Views.RandomFriendsView = Backbone.View.extend({
+    
+    initialize: function () {
+        
+        // instantiate three friend views
+        this.random_friends = [new Friendblur.Views.FriendView(1),
+                               new Friendblur.Views.FriendView(2),
+                               new Friendblur.Views.FriendView(3)];
+        
+    },
+    
+    render: function (blur) {
+        
+        for (var x = 0; x < 3; x++) {
+
+            // render an individual friend object
+            this.random_friends[x].render(blur);
+            
+        }
+        
+    },
+    
+    randomize: function () {
+        
+        var random_numbers = [];
+        
+        while (random_numbers.length < 3) {
+            
+            var random_number = Math.floor(Math.random() * Friendblur.friends.length);
+            
+            // make sure it's not already here
+            if ($.inArray(random_number, random_numbers) < 0)
+                random_numbers.push(random_number);
+            
+        }
+        
+        for (var x = 0; x < 3; x++) {
+            
+            // set the randomly chosen friends
+            this.random_friends[x].set_friend(Friendblur.friends.at(random_numbers[x]));
+            
+        }
+        
+    }
+    
+});
+
+
+Friendblur.Views.WaitRoundView = Backbone.View.extend({
+    
+    el: '#round-timer',
+    
+    initialize: function () {
+        
+        this.time_remaining = 5;
+        this.inputs = new Friendblur.Views.InputViews();
+        
+    },
+    
+    start: function () {
+        
+        // disable the inputs
+        this.inputs.disable();
+        
+        // start the round timer
+        this.timer_id = setInterval(this.tick.bind(this), 1000);
+    },
+    
+    tick: function () {
+        
+        if (this.time_remaining > 0) {
+            
+            // render round timer
+            $(this.el).html('round over! starting new round in ' + this.time_remaining + ' seconds.');
+            
+            // reduce time remaining
+            this.time_remaining = this.time_remaining - 1;
             
         } else {
             
-            if (this.countdown > 0) {
+            // clear timer
+            clearInterval(this.timer_id);
             
-                // reduce the blur
-                Friendblur.random_friends.render_again();
+            // transition into a game round
+            Friendblur.game_round = new Friendblur.Views.GameRoundView();
+            Friendblur.game_round.start();
             
-                // show count-down
-                this.countdown = this.countdown - 1;
-                this.$el.html('time left: ' + ((this.countdown + 1) * 4) + ' seconds');
+        }
+        
+    }
+    
+});
+
+
+Friendblur.Views.GameRoundView = Backbone.View.extend({
+    
+    el: '#round-timer',
+    
+    initialize: function () {
+        
+        this.blur_radius = 10,
+        this.time_remaining = 15,
+        this.friends = new Friendblur.Views.RandomFriendsView(),
+        this.inputs = new Friendblur.Views.InputViews();
+        
+    },
+    
+    start: function () {
+        
+        // randomize the friends
+        this.friends.randomize();
+        
+        // render the blur pictures
+        this.friends.render(this.blur_radius);
+        
+        // reset input boxes
+        this.inputs.reset();
+        
+        // render round timer
+        $(this.el).html('seconds left: ' + this.time_remaining);
+        
+        // start the round timer
+        this.timer_id = setInterval(this.tick.bind(this), 1000);
+        
+    },
+    
+    tick: function () {
+        
+        if (this.time_remaining > 0) {
             
-            } else {
+            // update round timer
+            $(this.el).html('seconds left: ' + this.time_remaining);
+            
+            // decrease blur if needed
+            if (this.time_remaining % 4 == 0) {
                 
-                this.$el.html('round over! starting new round.');
+                // reduce blur radius
+                this.blur_radius = this.blur_radius - 2;
                 
-                // clear the timer interval
-                clearInterval(Friendblur.timer_id);
-                
-                // start all over again
-                Friendblur.random_friends.randomize();
+                // render the images again
+                this.friends.render(this.blur_radius);
                 
             }
+            
+            // decrease the timer
+            this.time_remaining = this.time_remaining - 1;
+            
+        } else {
+            
+            // stop the timer
+            clearInterval(this.timer_id);
+            
+            // render friends with no blur
+            this.friends.render(0);
+            
+            // transition into a wait round
+            Friendblur.game_round = new Friendblur.Views.WaitRoundView();
+            Friendblur.game_round.start();
             
         }
         
