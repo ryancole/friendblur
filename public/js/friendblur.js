@@ -141,13 +141,13 @@ Friendblur.Views.InputView = Backbone.View.extend({
         }).change(function (event) {
             
             // get the selected friend's name
-            var this_friend = 'foo';
+            var this_friend = Friendblur.game_round.friends.random_friends[index - 1].friend.get('name');
             
             // remove style classes
             this.remove_classes();
             
             // compare friend names
-            if (this_friend === this.value) {
+            if (this_friend === $(this.el).val()) {
                 
                 this.success();
                 
