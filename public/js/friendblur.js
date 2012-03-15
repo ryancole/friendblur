@@ -238,6 +238,8 @@ Friendblur.Views.FriendView = Backbone.View.extend({
         
         this.el = '#image-source' + index;
         this.blur_el = '#image-destination' + index;
+        this.name_el = '#friend-name' + index;
+        this.index = index;
         
     },
     
@@ -254,6 +256,18 @@ Friendblur.Views.FriendView = Backbone.View.extend({
         
         // render blur image
         $(this.blur_el).blurjs({ radius: blur, source: this.el });
+        
+    },
+    
+    show_name: function () {
+        
+        $(this.name_el).html(this.friend.get('name'));
+        
+    },
+    
+    hide_name: function () {
+        
+        $(this.name_el).html('');
         
     }
     
@@ -303,7 +317,34 @@ Friendblur.Views.RandomFriendsView = Backbone.View.extend({
             
         }
         
+    },
+    
+    show_names: function () {
+        
+        for (var x = 0; x < this.random_friends.length; x++) {
+            
+            this.random_friends[x].show_name();
+            
+        }
+        
+    },
+    
+    hide_names: function () {
+        
+        for (var x = 0; x < this.random_friends.length; x++) {
+            
+            this.random_friends[x].hide_name();
+            
+        }
+        
     }
+    
+});
+
+
+Friendblur.Views.StopRoundView = Backbone.View.extend({
+    
+    el: '#success-modal',
     
 });
 
@@ -365,9 +406,14 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
         this.friends = new Friendblur.Views.RandomFriendsView(),
         this.inputs = new Friendblur.Views.InputViews();
         
+        // do something with input events here to detect successfull guesses
+        
     },
     
     start: function () {
+        
+        // clear the old friend's names
+        this.friends.hide_names();
         
         // randomize the friends
         this.friends.randomize();
@@ -412,6 +458,9 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
             // stop the timer
             clearInterval(this.timer_id);
             
+            // show the friend's name
+            this.friends.show_names();
+            
             // render friends with no blur
             this.friends.render(0);
             
@@ -440,6 +489,13 @@ function InitializeFriendblur (access_token) {
 
 
 $(function () {
+    
+    // init the modal, first, so it doesn't appear
+    $('#success-modal').modal({
+        
+        show: false
+        
+    });
     
     // friendblur app id
     Friendblur.Facebook.app_id = "275172692558681";

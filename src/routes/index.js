@@ -37,7 +37,12 @@ GameRouter.prototype.friend = function (req, res) {
         friend_id = req.query.friend_id,
         photo_url = 'https://graph.facebook.com/' + friend_id + '/picture?type=large&access_token=' + access_token;
     
-    return request.get(photo_url).pipe(res);
+    try {
+        return request.get(photo_url).pipe(res);
+    } catch (err) {
+        console.log('caught err: ' + err);
+        return res.send(err, 404);
+    }
     
 };
 

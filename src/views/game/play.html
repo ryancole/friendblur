@@ -8,6 +8,7 @@
     <script type="text/javascript" src="/public/js/lib/underscore.js"></script>
     <script type="text/javascript" src="/public/js/lib/backbone.js"></script>
     <script type="text/javascript" src="/public/js/lib/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/public/js/lib/bootstrap-modal.js"></script>
     <script type="text/javascript" src="/public/js/lib/bootstrap-typeahead.js"></script>
     <script type="text/javascript" src="/public/js/friendblur.js"></script>
 {% endblock %}
@@ -31,6 +32,7 @@
                     <span class="add-on"><i class="icon-search result-icon"></i></span><input type="text" id="guess-input1" class="search-query" />
                 </div>
             </form>
+            <h2 id="friend-name1"></h2>
         </div>
         <div class="span4 control-group" id="search-container2">
             <form class="form-search">
@@ -38,6 +40,7 @@
                     <span class="add-on"><i class="icon-search result-icon"></i></span><input type="text" id="guess-input2" class="search-query" />
                 </div>
             </form>
+            <h2 id="friend-name2"></h2>
         </div>
         <div class="span4 control-group" id="search-container3">
             <form class="form-search">
@@ -45,6 +48,7 @@
                     <span class="add-on"><i class="icon-search result-icon"></i></span><input type="text" id="guess-input3" class="search-query" />
                 </div>
             </form>
+            <h2 id="friend-name3"></h2>
         </div>
     </div>
     
@@ -59,4 +63,20 @@
         <div id="image-source2"></div>
         <div id="image-source3"></div>
     </div>
+    
+    <div class="modal hide" id="success-modal">
+        <div class="modal-header">
+            <a class="close" data-dismiss="modal">&times;</a>
+            <h3>Success! Good job!</h3>
+        </div>
+        <div class="modal-body">
+            <p>You were able to identify all three of the randomly selected friends. That's no easy task. Good job!</p>
+            <p>If you enjoyed this simple game then maybe your friends will, too! Please, <a name="fb_share" type="icon_link" share_url="http://friendblur.com" href="">share it with them</a>.</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn">Close</a>
+            <a href="#" class="btn btn-primary" name="fb_share">Share on Facebook</a>
+        </div>
+    </div>
+    <script src="http://static.ak.fbcdn.net/connect.php/js/FB.Share" type="text/javascript"></script>
 {% endblock %}
