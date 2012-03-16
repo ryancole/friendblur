@@ -95,6 +95,27 @@ Friendblur.Views.InputViews = Backbone.View.extend({
                     new Friendblur.Views.InputView(2),
                     new Friendblur.Views.InputView(3)];
         
+        _.each(this.els, function (input) {
+            
+            // add new event handlers for this instance
+            input.on('guess-attempt', function (event) {
+                
+                console.log(event);
+                
+            });
+            
+        });
+        
+    },
+    
+    destroy: function () {
+        
+        _.each(this.els, function (input) {
+            
+            input.off('guess-attempt');
+            
+        });
+        
     },
     
     disable: function () {
@@ -132,6 +153,7 @@ Friendblur.Views.InputView = Backbone.View.extend({
         this.el = '#guess-input' + index;
         this.el_icon = this.el + ' .result-icon';
         this.el_container = '#search-container' + index;
+        this.index = index;
         
         // enable bootstrap type ahead
         $(this.el).typeahead({
@@ -150,10 +172,12 @@ Friendblur.Views.InputView = Backbone.View.extend({
             if (this_friend === $(this.el).val()) {
                 
                 this.success();
+                this.trigger('guess-attempt', { success: true, index: this.index });
                 
             } else {
                 
                 this.failure();
+                this.trigger('guess-attempt', { success: false, index: this.index });
                 
             }
             
@@ -355,7 +379,7 @@ Friendblur.Views.WaitRoundView = Backbone.View.extend({
     
     initialize: function () {
         
-        this.time_remaining = 5;
+        this.time_remaining = 10;
         this.inputs = new Friendblur.Views.InputViews();
         
     },
@@ -383,6 +407,9 @@ Friendblur.Views.WaitRoundView = Backbone.View.extend({
             
             // clear timer
             clearInterval(this.timer_id);
+            
+            // destroy this inputs events
+            this.inputs.destroy();
             
             // transition into a game round
             Friendblur.game_round = new Friendblur.Views.GameRoundView();
@@ -463,6 +490,9 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
             
             // render friends with no blur
             this.friends.render(0);
+            
+            // clean up the inputs events
+            this.inputs.destroy();
             
             // transition into a wait round
             Friendblur.game_round = new Friendblur.Views.WaitRoundView();
