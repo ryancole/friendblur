@@ -37,7 +37,9 @@ Friendblur.Models.Friend = Backbone.Model.extend({
     
     initialize: function (friend) {
         
-        this.set('profile_photo_url', window.location.origin + '/friend?friend_id=' + friend.id + '&' + Friendblur.Facebook.access_token);
+        var photo_url = window.location.protocol + '//' + window.location.hostname + '/friend?friend_id=' + friend.id + '&' + Friendblur.Facebook.access_token;
+        
+        this.set('profile_photo_url', photo_url);
         
     }
     
@@ -101,11 +103,11 @@ Friendblur.Views.InputViews = Backbone.View.extend({
             // add new event handlers for this instance
             input.on('guess-attempt', function (event) {
                 
-                console.log(this);
+                this.trigger('guess-attempt', event);
                 
-            });
+            }.bind(this));
             
-        });
+        }.bind(this));
         
     },
     
@@ -371,6 +373,43 @@ Friendblur.Views.StopRoundView = Backbone.View.extend({
     
     el: '#success-modal',
     
+    initialize: function () {
+
+        this.inputs = new Friendblur.Views.InputViews();
+        
+    },
+    
+    start: function () {
+        
+        // show modal
+        $(this.el).modal('show');
+        
+        // set event handler for close
+        $(this.el).on('hidden', function () {
+            
+            this.destroy();
+            
+        }.bind(this));
+        
+        // track this success
+        mixpanel.track('successful round');
+        
+    },
+    
+    destroy: function () {
+        
+        // kill the event handlers
+        $(this.el).off('hidden');
+        
+        // destroy the inputs
+        this.inputs.destroy();
+        
+        // transition back into wait round
+        Friendblur.game_round = new Friendblur.Views.WaitRoundView();
+        Friendblur.game_round.start();
+        
+    }
+    
 });
 
 
@@ -429,12 +468,41 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
     
     initialize: function () {
         
+        this.successes = 0,
         this.blur_radius = 10,
         this.time_remaining = 15,
         this.friends = new Friendblur.Views.RandomFriendsView(),
         this.inputs = new Friendblur.Views.InputViews();
         
         // do something with input events here to detect successfull guesses
+        this.inputs.on('guess-attempt', function (event) {
+            
+            if (event.success == true) {
+                
+                // keep count of successfull guesses
+                this.successes = this.successes + 1;
+                
+                // end this round if they guessed all three
+                if (this.successes >= 3)
+                    this.time_remaining = 0;
+                
+                // track this success
+                mixpanel.track('successful guess');
+                
+            } else {
+                
+                // track this success
+                mixpanel.track('failed guess');
+                
+            }
+            
+        }.bind(this));
+        
+    },
+    
+    destroy: function () {
+        
+        this.inputs.off('guess-attempt');
         
     },
     
@@ -457,6 +525,9 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
         
         // start the round timer
         this.timer_id = setInterval(this.tick.bind(this), 1000);
+        
+        // track this game round
+        mixpanel.track('new round');
         
     },
     
@@ -495,9 +566,23 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
             // clean up the inputs events
             this.inputs.destroy();
             
-            // transition into a wait round
-            Friendblur.game_round = new Friendblur.Views.WaitRoundView();
-            Friendblur.game_round.start();
+            // destory this
+            this.destroy();
+            
+            // transition into the next game state
+            if (this.successes >= 3) {
+                
+                // a stop round
+                Friendblur.game_round = new Friendblur.Views.StopRoundView();
+                Friendblur.game_round.start();
+                
+            } else {
+                
+                // a wait round
+                Friendblur.game_round = new Friendblur.Views.WaitRoundView();
+                Friendblur.game_round.start();
+                
+            }
             
         }
         

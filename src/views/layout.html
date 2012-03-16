@@ -7,13 +7,18 @@
         <link rel="stylesheet" type="text/css" href="/public/css/bootstrap.min.css" media="screen" />
         <link rel="stylesheet" type="text/css" href="/public/css/bootstrap-responsive.min.css" media="screen" />
         <link rel="stylesheet" type="text/css" href="/public/css/style.css" media="screen" />
-        <script type="text/javascript">var mpq=[];mpq.push(["init","c806758cc70695eefa6fae8d26391925"]);(function(){var b,a,e,d,c;b=document.createElement("script");b.type="text/javascript";b.async=true;b.src=(document.location.protocol==="https:"?"https:":"http:")+"//api.mixpanel.com/site_media/js/api/mixpanel.js";a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(b,a);e=function(f){return function(){mpq.push([f].concat(Array.prototype.slice.call(arguments,0)))}};d=["init","track","track_links","track_forms","register","register_once","identify","name_tag","set_config"];for(c=0;c<d.length;c++){mpq[d[c]]=e(d[c])}})();mpq.track("page view");</script>
+        <script type="text/javascript">(function(d,c){var a,b,g,e;a=d.createElement("script");a.type="text/javascript";a.async=!0;a.src=("https:"===d.location.protocol?"https:":"http:")+'//api.mixpanel.com/site_media/js/api/mixpanel.2.js';b=d.getElementsByTagName("script")[0];b.parentNode.insertBefore(a,b);c._i=[];c.init=function(a,d,f){var b=c;"undefined"!==typeof f?b=c[f]=[]:f="mixpanel";g="disable track track_links track_forms register register_once unregister identify name_tag set_config".split(" ");for(e=0;e<g.length;e++)(function(a){b[a]=function(){b.push([a].concat(Array.prototype.slice.call(arguments,0)))}})(g[e]);c._i.push([a,d,f])};window.mixpanel=c})(document,[]);mixpanel.init("cac671d2f9752688ea7a23ef0b2290bf");mixpanel.track('page view');</script>
         
         {% block scripts %}{% endblock %}
     </head>
     <body>
         <div class="container">
             {% block content %}{% endblock %}
+            
+            <hr>
+            <footer>
+                <p>made by <a href="http://twitter.com/_ryancole">ryan</a></p>
+            </footer>
         </div>
     </body>
 </html>
