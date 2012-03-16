@@ -91,6 +91,7 @@ Friendblur.Views.InputViews = Backbone.View.extend({
     
     initialize: function () {
         
+        this.whatever = this;
         this.els = [new Friendblur.Views.InputView(1),
                     new Friendblur.Views.InputView(2),
                     new Friendblur.Views.InputView(3)];
@@ -100,7 +101,7 @@ Friendblur.Views.InputViews = Backbone.View.extend({
             // add new event handlers for this instance
             input.on('guess-attempt', function (event) {
                 
-                console.log(event);
+                console.log(this);
                 
             });
             
