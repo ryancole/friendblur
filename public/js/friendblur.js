@@ -56,7 +56,7 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
     // utility method for loading friends from facebook api
     from_facebook: function (url) {
         
-        $.getJSON(url, function (result) {
+        $.getJSON(url + '&callback=?', function (result) {
             
             // add these friends to the collection
             Friendblur.friends.add(result.data);
@@ -593,7 +593,7 @@ Friendblur.Views.GameRoundView = Backbone.View.extend({
 
 function InitializeFriendblur (access_token) {
     
-    $.getJSON('https://graph.facebook.com/me?' + access_token, function (result) {
+    $.getJSON('https://graph.facebook.com/me?' + access_token + '&callback=?', function (result) {
         
         // create the authenticated user
         Friendblur.user = new Friendblur.Models.User(result);
