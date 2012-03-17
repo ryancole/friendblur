@@ -1,5 +1,6 @@
 
-var request = require('request');
+var request = require('request'),
+    models = require('../models');
 
 
 // define route handler
@@ -13,6 +14,9 @@ function GameRouter (express) {
     this.express.get('/', this.about);
     this.express.get('/play/', this.play);
     this.express.get('/friend', this.friend);
+    
+    // routes: post
+    this.express.post('/stats', this.stats_post);
     
 };
 
@@ -33,16 +37,33 @@ GameRouter.prototype.play = function (req, res) {
 
 GameRouter.prototype.friend = function (req, res) {
     
-    var access_token = req.query.access_token,
-        friend_id = req.query.friend_id,
-        photo_url = 'https://graph.facebook.com/' + friend_id + '/picture?type=large&access_token=' + access_token;
-    
     try {
+        
+        var access_token = req.query.access_token,
+            friend_id = req.query.friend_id,
+            photo_url = 'https://graph.facebook.com/' + friend_id + '/picture?type=large&access_token=' + access_token;
+        
         return request.get(photo_url).pipe(res);
+        
     } catch (err) {
-        console.log('caught err: ' + err);
+        
         return res.send(err, 404);
+        
     }
+    
+};
+
+
+GameRouter.prototype.stats_post = function (req, res) {
+    
+    var stats_payload = req.body.stats_payload,
+        stats_user = stats_payload.facebook_id;
+    
+    models.user.update(stats_user, stats_payload, function (err, result) {
+        
+        return res.send({ success: result });
+        
+    });
     
 };
 

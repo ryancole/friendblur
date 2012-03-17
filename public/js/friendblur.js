@@ -391,6 +391,15 @@ Friendblur.Views.StopRoundView = Backbone.View.extend({
             
         }.bind(this));
         
+        // submit stats for previous round
+        this.submit_stats({
+            
+            facebook_id: Friendblur.user.get('id'),
+            facebook_name: Friendblur.user.get('name'),
+            success: true
+            
+        });
+        
         // track this success
         mixpanel.track('successful round');
         
@@ -407,6 +416,16 @@ Friendblur.Views.StopRoundView = Backbone.View.extend({
         // transition back into wait round
         Friendblur.game_round = new Friendblur.Views.WaitRoundView();
         Friendblur.game_round.start();
+        
+    },
+    
+    submit_stats: function (payload) {
+        
+        $.post('/stats', { stats_payload: payload }, function (response) {
+            
+            console.dir(response);
+            
+        });
         
     }
     
