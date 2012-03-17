@@ -17,10 +17,25 @@
 }
 
 #about {
-    margin-top: 60px;
     text-align: center;
 }
 
 #about-blurb {
-    padding: 30px 60px;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+#about-blurb p {
+    margin-bottom: 20px;
+}
+
+.faceborder {
+    padding: 10px;
+    margin-top: 60px;
+    border-radius: 6px;
+    background-image: url('/public/img/border.png');
+}
+
+.hero-unit {
+    margin-bottom: 0px;
 }
