@@ -7,6 +7,25 @@ var UserModel = module.exports = function (database) {
 };
 
 
+UserModel.prototype.find = function (document_spec, callback) {
+    
+    this.db.collection('users', function (err, users) {
+        
+        // get the cursor
+        var cursor = users.find(document_spec);
+        
+        // specify result format
+        cursor.sort({ successful_rounds: -1 }).limit(10).toArray(function (err, users) {
+            
+            return callback(err, users);
+            
+        });
+        
+    });
+    
+};
+
+
 UserModel.prototype.update = function (id, document_spec, callback) {
     
     this.db.collection('users', function (err, users) {

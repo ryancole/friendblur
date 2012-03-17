@@ -37,7 +37,7 @@ Friendblur.Models.Friend = Backbone.Model.extend({
     
     initialize: function (friend) {
         
-        var photo_url = window.location.protocol + '//' + window.location.hostname + '/friend?friend_id=' + friend.id + '&' + Friendblur.Facebook.access_token;
+        var photo_url = window.location.protocol + '//' + window.location.hostname + '/api/picture?friend_id=' + friend.id + '&' + Friendblur.Facebook.access_token;
         
         this.set('profile_photo_url', photo_url);
         
@@ -46,7 +46,26 @@ Friendblur.Models.Friend = Backbone.Model.extend({
 });
 
 
+Friendblur.Models.Statistic = Backbone.Model.extend({
+    
+    idAttribute: 'facebook_id'
+    
+});
+
+
 // COLLECTIONS
+
+
+Friendblur.Collections.Statistics = Backbone.Collection.extend({
+    
+    // collection model
+    model: Friendblur.Models.Statistic,
+    
+    // collection url
+    url: '/api/statistics'
+    
+});
+
 
 Friendblur.Collections.Friends = Backbone.Collection.extend({
     
@@ -87,6 +106,26 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
 
 
 // VIEWS
+
+
+Friendblur.Views.StatisticsView = Backbone.Views.extend({
+    
+    el: '#statistics',
+    
+    initialize: function () {
+        
+        this.statistics = new Friendblur.Collections.Statistics();
+        this.statistics.fetch();
+        
+    },
+    
+    render: function () {
+        
+        
+        
+    }
+    
+});
 
 
 Friendblur.Views.InputViews = Backbone.View.extend({
@@ -395,7 +434,7 @@ Friendblur.Views.StopRoundView = Backbone.View.extend({
         this.submit_stats({
             
             facebook_id: Friendblur.user.get('id'),
-            facebook_name: Friendblur.user.get('name'),
+            facebook_name: Friendblur.user.get('first_name'),
             success: true
             
         });
@@ -421,7 +460,7 @@ Friendblur.Views.StopRoundView = Backbone.View.extend({
     
     submit_stats: function (payload) {
         
-        $.post('/stats', { stats_payload: payload }, function (response) {
+        $.post('/api/statistics', { stats_payload: payload }, function (response) {
             
             console.dir(response);
             
@@ -616,6 +655,10 @@ function InitializeFriendblur (access_token) {
         
         // create the authenticated user
         Friendblur.user = new Friendblur.Models.User(result);
+        
+        // get statistics
+        Friendblur.statistics = new Friendblur.Views.StatisticsView();
+        Friendblur.statistics.render();
         
     });
     
