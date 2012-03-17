@@ -108,7 +108,7 @@ Friendblur.Collections.Friends = Backbone.Collection.extend({
 // VIEWS
 
 
-Friendblur.Views.StatisticsView = Backbone.Views.extend({
+Friendblur.Views.StatisticsView = Backbone.View.extend({
     
     el: '#statistics',
     
